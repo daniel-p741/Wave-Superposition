@@ -28,14 +28,14 @@ window.onload = function () {
     const waveFrequency = 0.1;
     const waveLength = 50; // Total length of each wave
     let phaseShift = 0; // Phase shift to make crests move towards the center
+    let phaseShiftDirection = -1; // Direction of the phase shift
 
     // Function to create a sine wave
     function createSineWave(startX, endX, direction) {
         const points = [];
         for (let i = 0; i < numPoints; i++) {
             const x = startX + (endX - startX) * (i / numPoints);
-            const y = waveAmplitude * Math.sin(waveFrequency * (x - phaseShift) * direction);
-            points.push(new THREE.Vector3(x, y, 0));
+            points.push(new THREE.Vector3(x, 0, 0));
         }
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({ color: 0x0000ff });
@@ -45,28 +45,41 @@ window.onload = function () {
 
     let wave1 = createSineWave(-waveLength, 0, 1); // Left to middle
     let wave2 = createSineWave(0, waveLength, -1); // Right to middle
-
     scene.add(wave1);
     scene.add(wave2);
-
-
 
     // Animation loop
     function animate() {
         requestAnimationFrame(animate);
 
         // Update the phase shift to make crests move towards the center
-        phaseShift += 0.05;
+        phaseShift += 0.05 * phaseShiftDirection;
 
-        // Re-create the wave geometries with updated phase shift
-        scene.remove(wave1);
-        scene.remove(wave2);
-        wave1.geometry.dispose();
-        wave2.geometry.dispose();
-        wave1 = createSineWave(-waveLength, 0, 1);
-        wave2 = createSineWave(0, waveLength, -1);
-        scene.add(wave1);
-        scene.add(wave2);
+        // Reverse the direction of the phase shift when it reaches certain thresholds
+        if (phaseShift <= -waveLength / 2 || phaseShift >= waveLength / 2) {
+            phaseShiftDirection *= -1;
+        }
+
+        // Update the positions of the points based on the phase shift
+        const positions1 = wave1.geometry.attributes.position.array;
+        const positions2 = wave2.geometry.attributes.position.array;
+        for (let i = 0; i < numPoints; i++) {
+            const x1 = positions1[i * 3];
+            const distanceFromCenter1 = Math.abs(x1);
+            const shiftFactor1 = Math.exp(-Math.pow(distanceFromCenter1 - phaseShift, 2) / (2 * Math.pow(waveLength / 10, 2)));
+            const y1 = waveAmplitude * Math.sin(waveFrequency * x1) * shiftFactor1;
+            positions1[i * 3 + 1] = y1;
+
+            const x2 = positions2[i * 3];
+            const distanceFromCenter2 = Math.abs(x2);
+            const shiftFactor2 = Math.exp(-Math.pow(distanceFromCenter2 - phaseShift, 2) / (2 * Math.pow(waveLength / 10, 2)));
+            const y2 = waveAmplitude * Math.sin(waveFrequency * x2) * shiftFactor2;
+            positions2[i * 3 + 1] = y2;
+        }
+
+        // Mark the position attributes as needing update
+        wave1.geometry.attributes.position.needsUpdate = true;
+        wave2.geometry.attributes.position.needsUpdate = true;
 
         renderer.render(scene, camera);
     }
