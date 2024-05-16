@@ -49,7 +49,7 @@ window.onload = function () {
             linejoin: 'round' // Set the line join style to 'round' for rounded joins
         });
         const wave = new THREE.Line(geometry, material);
-        wave.userData = { waveAmplitude, initialAmplitude: waveAmplitude, waveLength, waveFrequency: Math.PI / (waveLength / 2), yOffset };
+        wave.userData = { waveAmplitude, waveLength, waveFrequency: Math.PI / (waveLength / 2), yOffset };
         return wave;
     }
 
@@ -73,22 +73,19 @@ window.onload = function () {
             timeDirection *= -1;
         }
 
-        // Function to calculate wave Y position
-        function calculateWaveYPosition(x, waveData) {
-            return waveData.yOffset + waveData.waveAmplitude * Math.sin(((x + waveData.waveLength / 4) % waveData.waveLength) * waveData.waveFrequency);
-        }
-
         // Update the positions of the points for the left wave
         const leftPositions = leftWave.geometry.attributes.position.array;
         const leftWaveData = leftWave.userData;
         for (let i = 0; i < numPoints; i++) {
             const x = leftPositions[i * 3] + time;
             if (x > -leftWaveData.waveLength / 4 && x < leftWaveData.waveLength / 4) {
-                leftPositions[i * 3 + 1] = calculateWaveYPosition(x, leftWaveData);
+                const y = leftWaveData.yOffset + leftWaveData.waveAmplitude * Math.sin(((x + leftWaveData.waveLength / 4) % leftWaveData.waveLength) * leftWaveData.waveFrequency);
+                leftPositions[i * 3 + 1] = y;
             } else {
                 leftPositions[i * 3 + 1] = leftWaveData.yOffset;
             }
         }
+        leftWave.geometry.attributes.position.needsUpdate = true;
 
         // Update the positions of the points for the right wave
         const rightPositions = rightWave.geometry.attributes.position.array;
@@ -96,38 +93,12 @@ window.onload = function () {
         for (let i = 0; i < numPoints; i++) {
             const x = rightPositions[i * 3] - time;
             if (x > -rightWaveData.waveLength / 4 && x < rightWaveData.waveLength / 4) {
-                rightPositions[i * 3 + 1] = calculateWaveYPosition(x, rightWaveData);
+                const y = rightWaveData.yOffset + rightWaveData.waveAmplitude * Math.sin(((x + rightWaveData.waveLength / 4) % rightWaveData.waveLength) * rightWaveData.waveFrequency);
+                rightPositions[i * 3 + 1] = y;
             } else {
                 rightPositions[i * 3 + 1] = rightWaveData.yOffset;
             }
         }
-
-        // Check for intersection and adjust amplitude
-        let wavesOverlap = false;
-        for (let i = 0; i < numPoints; i++) {
-            const leftX = leftPositions[i * 3];
-            const rightX = rightPositions[i * 3];
-            if (Math.abs(leftX - rightX) < 0.1) { // Adjust threshold for intersection detection
-                const leftY = leftPositions[i * 3 + 1];
-                const rightY = rightPositions[i * 3 + 1];
-                if (Math.abs(leftY - rightY) < 0.1) { // Adjust threshold for Y intersection
-                    wavesOverlap = true;
-                    if (leftWaveData.waveAmplitude > rightWaveData.waveAmplitude) {
-                        leftWaveData.waveAmplitude = leftWaveData.initialAmplitude + rightWaveData.initialAmplitude;
-                    } else {
-                        rightWaveData.waveAmplitude = rightWaveData.initialAmplitude + leftWaveData.initialAmplitude;
-                    }
-                }
-            }
-        }
-
-        // If waves do not overlap, revert to initial amplitude
-        if (!wavesOverlap) {
-            leftWaveData.waveAmplitude = leftWaveData.initialAmplitude;
-            rightWaveData.waveAmplitude = rightWaveData.initialAmplitude;
-        }
-
-        leftWave.geometry.attributes.position.needsUpdate = true;
         rightWave.geometry.attributes.position.needsUpdate = true;
 
         renderer.render(scene, camera);
@@ -135,12 +106,10 @@ window.onload = function () {
 
     document.getElementById('leftWaveAmplitude').addEventListener('input', function (event) {
         leftWave.userData.waveAmplitude = parseFloat(event.target.value); // Update left wave amplitude
-        leftWave.userData.initialAmplitude = parseFloat(event.target.value); // Update initial left wave amplitude
     });
 
     document.getElementById('rightWaveAmplitude').addEventListener('input', function (event) {
         rightWave.userData.waveAmplitude = parseFloat(event.target.value); // Update right wave amplitude
-        rightWave.userData.initialAmplitude = parseFloat(event.target.value); // Update initial right wave amplitude
     });
 
     animate();
