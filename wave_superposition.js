@@ -22,15 +22,13 @@ window.onload = function () {
     var width = window.innerWidth;
     var height = window.innerHeight;
 
-    //const wave1 = new THREE.LineDashedMaterial({ color: 0x0000ff, linewidth: 1, scale: 1, dashSize: .5, gapSize: .2 });
-
     const numPoints = 100;
 
-    const waveAmplitudeLeft = 4; // Amplitude for the left wave
+    const waveAmplitudeLeft = 4; // Initial amplitude for the left wave
     const waveLengthLeft = 30; // Wavelength for the left wave
     const waveFrequencyLeft = Math.PI / (waveLengthLeft / 2);
 
-    const waveAmplitudeRight = 3; // Amplitude for the right wave
+    const waveAmplitudeRight = 3; // Initial amplitude for the right wave
     const waveLengthRight = 30; // Wavelength for the right wave
     const waveFrequencyRight = Math.PI / (waveLengthRight / 2);
 
@@ -103,12 +101,13 @@ window.onload = function () {
 
         renderer.render(scene, camera);
     }
+
     document.getElementById('leftWaveAmplitude').addEventListener('input', function (event) {
-        waveAmplitudeLeft = parseFloat(event.target.value);
+        leftWave.userData.waveAmplitude = parseFloat(event.target.value); // Update left wave amplitude
     });
 
     document.getElementById('rightWaveAmplitude').addEventListener('input', function (event) {
-        waveAmplitudeRight = parseFloat(event.target.value);
+        rightWave.userData.waveAmplitude = parseFloat(event.target.value); // Update right wave amplitude
     });
 
     animate();
