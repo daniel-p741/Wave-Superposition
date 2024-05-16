@@ -25,17 +25,14 @@ window.onload = function () {
     //const wave1 = new THREE.LineDashedMaterial({ color: 0x0000ff, linewidth: 1, scale: 1, dashSize: .5, gapSize: .2 });
 
     const numPoints = 100;
-    const waveAmplitude = 5;
-    const waveAmount = 0.2;
-    const waveLength = 50; // Total length of each wave
-    let phaseShift = -waveLength / 2; // Start the phase shift at the left end
-    let phaseShiftDirection = 1; // Direction of the phase shift
+    const waveAmplitude = 3;
+    const waveLength = 40; // Total length of each wave
 
     // Function to create a single connected wave
-    function createConnectedWave() {
+    function createConnectedWave(startX, direction) {
         const points = [];
         for (let i = 0; i < numPoints; i++) {
-            const x = -waveLength + (2 * waveLength) * (i / numPoints);
+            const x = startX + direction * (waveLength * i) / numPoints;
             points.push(new THREE.Vector3(x, 0, 0));
         }
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -49,33 +46,45 @@ window.onload = function () {
         return wave;
     }
 
-    let connectedWave = createConnectedWave();
-    scene.add(connectedWave);
+    // Create two connected waves, one on each side of the screen
+    const leftWave = createConnectedWave(-waveLength / 2, 1);
+    const rightWave = createConnectedWave(waveLength / 2, -1);
+    scene.add(leftWave);
+    scene.add(rightWave);
+
+    let time = 0;
 
     // Animation loop
     function animate() {
         requestAnimationFrame(animate);
 
-        // Update the phase shift based on the direction
-        phaseShift += 0.05 * phaseShiftDirection;
+        time += 0.05;
 
-        // Reverse the direction of the phase shift when it reaches the end of the wave
-        if (phaseShift >= waveLength / 2 || phaseShift <= -waveLength / 2) {
-            phaseShiftDirection *= -1;
-        }
-
-        // Update the positions of the points based on the phase shift
-        const positions = connectedWave.geometry.attributes.position.array;
+        // Update the positions of the points for the left wave
+        const leftPositions = leftWave.geometry.attributes.position.array;
         for (let i = 0; i < numPoints; i++) {
-            const x = positions[i * 3];
-            const distanceFromCenter = Math.abs(x);
-            const shiftFactor = Math.exp(-Math.pow(distanceFromCenter - phaseShift, 2) / (2 * Math.pow(waveLength / 10, 2)));
-            const y = waveAmplitude * Math.abs(Math.sin(waveAmount * x)) * shiftFactor;
-            positions[i * 3 + 1] = y;
+            const x = leftPositions[i * 3] + time;
+            if (x > -waveLength / 4 && x < waveLength / 4) {
+                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * (Math.PI / (waveLength / 2)));
+                leftPositions[i * 3 + 1] = y;
+            } else {
+                leftPositions[i * 3 + 1] = 0;
+            }
         }
+        leftWave.geometry.attributes.position.needsUpdate = true;
 
-        // Mark the position attributes as needing update
-        connectedWave.geometry.attributes.position.needsUpdate = true;
+        // Update the positions of the points for the right wave
+        const rightPositions = rightWave.geometry.attributes.position.array;
+        for (let i = 0; i < numPoints; i++) {
+            const x = rightPositions[i * 3] - time;
+            if (x > -waveLength / 4 && x < waveLength / 4) {
+                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * (Math.PI / (waveLength / 2)));
+                rightPositions[i * 3 + 1] = y;
+            } else {
+                rightPositions[i * 3 + 1] = 0;
+            }
+        }
+        rightWave.geometry.attributes.position.needsUpdate = true;
 
         renderer.render(scene, camera);
     }
