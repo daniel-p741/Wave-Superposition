@@ -53,12 +53,18 @@ window.onload = function () {
     scene.add(rightWave);
 
     let time = 0;
+    let timeDirection = 1; // 1 for forward, -1 for backward
 
     // Animation loop
     function animate() {
         requestAnimationFrame(animate);
 
-        time += 0.05;
+        time += 0.05 * timeDirection;
+
+        // Check if the wave crests need to reverse direction
+        if (time > waveLength / 4 || time < -waveLength / 4) {
+            timeDirection *= -1;
+        }
 
         // Update the positions of the points for the left wave
         const leftPositions = leftWave.geometry.attributes.position.array;
