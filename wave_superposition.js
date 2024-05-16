@@ -25,7 +25,8 @@ window.onload = function () {
     //const wave1 = new THREE.LineDashedMaterial({ color: 0x0000ff, linewidth: 1, scale: 1, dashSize: .5, gapSize: .2 });
 
     const numPoints = 100;
-    const waveAmplitude = 3;
+    const waveAmplitude = 6; // Increased amplitude for taller crests
+    const waveFrequency = 0.4; // Increased frequency for narrower crests
     const waveLength = 40; // Total length of each wave
 
     // Function to create a single connected wave
@@ -70,8 +71,9 @@ window.onload = function () {
         const leftPositions = leftWave.geometry.attributes.position.array;
         for (let i = 0; i < numPoints; i++) {
             const x = leftPositions[i * 3] + time;
+            // Apply a smooth transition to the crest
             if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * (Math.PI / (waveLength / 2)));
+                const y = waveAmplitude * Math.sin(waveFrequency * x);
                 leftPositions[i * 3 + 1] = y;
             } else {
                 leftPositions[i * 3 + 1] = 0;
@@ -83,8 +85,9 @@ window.onload = function () {
         const rightPositions = rightWave.geometry.attributes.position.array;
         for (let i = 0; i < numPoints; i++) {
             const x = rightPositions[i * 3] - time;
+            // Apply a smooth transition to the crest
             if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * (Math.PI / (waveLength / 2)));
+                const y = waveAmplitude * Math.sin(waveFrequency * x);
                 rightPositions[i * 3 + 1] = y;
             } else {
                 rightPositions[i * 3 + 1] = 0;
