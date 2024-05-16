@@ -62,6 +62,35 @@ window.onload = function () {
     let time = 0;
     let timeDirection = 1; // 1 for forward, -1 for backward
 
+    // Function to update wave points with superposition
+    function updateWavePoints(wave, time, direction) {
+        const positions = wave.geometry.attributes.position.array;
+        const waveData = wave.userData;
+        for (let i = 0; i < numPoints; i++) {
+            const x = positions[i * 3] + direction * time;
+            const leftWaveData = leftWave.userData;
+            const rightWaveData = rightWave.userData;
+            const leftX = positions[i * 3] + time;
+            const rightX = positions[i * 3] - time;
+
+            if (x > -waveData.waveLength / 4 && x < waveData.waveLength / 4) {
+                let y = waveData.yOffset + waveData.waveAmplitude * Math.sin(((x + waveData.waveLength / 4) % waveData.waveLength) * waveData.waveFrequency);
+
+                // Check for overlap and apply superposition
+                if (leftX > -leftWaveData.waveLength / 4 && leftX < leftWaveData.waveLength / 4 && rightX > -rightWaveData.waveLength / 4 && rightX < rightWaveData.waveLength / 4) {
+                    const leftY = leftWaveData.waveAmplitude * Math.sin(((leftX + leftWaveData.waveLength / 4) % leftWaveData.waveLength) * leftWaveData.waveFrequency);
+                    const rightY = rightWaveData.waveAmplitude * Math.sin(((rightX + rightWaveData.waveLength / 4) % rightWaveData.waveLength) * rightWaveData.waveFrequency);
+                    y = waveData.yOffset + leftY + rightY;
+                }
+
+                positions[i * 3 + 1] = y;
+            } else {
+                positions[i * 3 + 1] = waveData.yOffset;
+            }
+        }
+        wave.geometry.attributes.position.needsUpdate = true;
+    }
+
     // Animation loop
     function animate() {
         requestAnimationFrame(animate);
@@ -73,33 +102,9 @@ window.onload = function () {
             timeDirection *= -1;
         }
 
-        // Update the positions of the points for the left wave
-        const leftPositions = leftWave.geometry.attributes.position.array;
-        const leftWaveData = leftWave.userData;
-        for (let i = 0; i < numPoints; i++) {
-            const x = leftPositions[i * 3] + time;
-            if (x > -leftWaveData.waveLength / 4 && x < leftWaveData.waveLength / 4) {
-                const y = leftWaveData.yOffset + leftWaveData.waveAmplitude * Math.sin(((x + leftWaveData.waveLength / 4) % leftWaveData.waveLength) * leftWaveData.waveFrequency);
-                leftPositions[i * 3 + 1] = y;
-            } else {
-                leftPositions[i * 3 + 1] = leftWaveData.yOffset;
-            }
-        }
-        leftWave.geometry.attributes.position.needsUpdate = true;
-
-        // Update the positions of the points for the right wave
-        const rightPositions = rightWave.geometry.attributes.position.array;
-        const rightWaveData = rightWave.userData;
-        for (let i = 0; i < numPoints; i++) {
-            const x = rightPositions[i * 3] - time;
-            if (x > -rightWaveData.waveLength / 4 && x < rightWaveData.waveLength / 4) {
-                const y = rightWaveData.yOffset + rightWaveData.waveAmplitude * Math.sin(((x + rightWaveData.waveLength / 4) % rightWaveData.waveLength) * rightWaveData.waveFrequency);
-                rightPositions[i * 3 + 1] = y;
-            } else {
-                rightPositions[i * 3 + 1] = rightWaveData.yOffset;
-            }
-        }
-        rightWave.geometry.attributes.position.needsUpdate = true;
+        // Update the positions of the points for the waves
+        updateWavePoints(leftWave, time, 1);
+        updateWavePoints(rightWave, time, -1);
 
         renderer.render(scene, camera);
     }
@@ -113,4 +118,6 @@ window.onload = function () {
     });
 
     animate();
+
+
 }
