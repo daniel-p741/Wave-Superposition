@@ -25,9 +25,9 @@ window.onload = function () {
     //const wave1 = new THREE.LineDashedMaterial({ color: 0x0000ff, linewidth: 1, scale: 1, dashSize: .5, gapSize: .2 });
 
     const numPoints = 100;
-    const waveAmplitude = 6; // Increased amplitude for taller crests
-    const waveFrequency = 0.4; // Increased frequency for narrower crests
-    const waveLength = 40; // Total length of each wave
+    const waveAmplitude = 4; // Adjust this value to change the height of the crests
+    const waveLength = 10; // Total length of each wave
+    const waveFrequency = Math.PI / (waveLength / 2); // Adjust this value to change the width of the crests
 
     // Function to create a single connected wave
     function createConnectedWave(startX, direction) {
@@ -71,9 +71,8 @@ window.onload = function () {
         const leftPositions = leftWave.geometry.attributes.position.array;
         for (let i = 0; i < numPoints; i++) {
             const x = leftPositions[i * 3] + time;
-            // Apply a smooth transition to the crest
             if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(waveFrequency * x);
+                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * waveFrequency);
                 leftPositions[i * 3 + 1] = y;
             } else {
                 leftPositions[i * 3 + 1] = 0;
@@ -85,9 +84,8 @@ window.onload = function () {
         const rightPositions = rightWave.geometry.attributes.position.array;
         for (let i = 0; i < numPoints; i++) {
             const x = rightPositions[i * 3] - time;
-            // Apply a smooth transition to the crest
             if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(waveFrequency * x);
+                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * waveFrequency);
                 rightPositions[i * 3 + 1] = y;
             } else {
                 rightPositions[i * 3 + 1] = 0;
@@ -97,6 +95,8 @@ window.onload = function () {
 
         renderer.render(scene, camera);
     }
+
+
 
     animate();
 
