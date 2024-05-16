@@ -25,12 +25,17 @@ window.onload = function () {
     //const wave1 = new THREE.LineDashedMaterial({ color: 0x0000ff, linewidth: 1, scale: 1, dashSize: .5, gapSize: .2 });
 
     const numPoints = 100;
-    const waveAmplitude = 4; // Adjust this value to change the height of the crests
-    const waveLength = 10; // Total length of each wave
-    const waveFrequency = Math.PI / (waveLength / 2); // Adjust this value to change the width of the crests
 
-    // Function to create a single connected wave
-    function createConnectedWave(startX, direction) {
+    const waveAmplitudeLeft = 4; // Amplitude for the left wave
+    const waveLengthLeft = 30; // Wavelength for the left wave
+    const waveFrequencyLeft = Math.PI / (waveLengthLeft / 2);
+
+    const waveAmplitudeRight = 3; // Amplitude for the right wave
+    const waveLengthRight = 30; // Wavelength for the right wave
+    const waveFrequencyRight = Math.PI / (waveLengthRight / 2);
+
+    // Function to create a single connected wave with specific amplitude and wavelength
+    function createConnectedWave(startX, direction, waveLength, waveAmplitude) {
         const points = [];
         for (let i = 0; i < numPoints; i++) {
             const x = startX + direction * (waveLength * i) / numPoints;
@@ -44,12 +49,13 @@ window.onload = function () {
             linejoin: 'round' // Set the line join style to 'round' for rounded joins
         });
         const wave = new THREE.Line(geometry, material);
+        wave.userData = { waveAmplitude, waveLength, waveFrequency: Math.PI / (waveLength / 2) };
         return wave;
     }
 
     // Create two connected waves, one on each side of the screen
-    const leftWave = createConnectedWave(-waveLength / 2, 1);
-    const rightWave = createConnectedWave(waveLength / 2, -1);
+    const leftWave = createConnectedWave(-waveLengthLeft / 2, 1, waveLengthLeft, waveAmplitudeLeft);
+    const rightWave = createConnectedWave(waveLengthRight / 2, -1, waveLengthRight, waveAmplitudeRight);
     scene.add(leftWave);
     scene.add(rightWave);
 
@@ -63,16 +69,17 @@ window.onload = function () {
         time += 0.05 * timeDirection;
 
         // Check if the wave crests need to reverse direction
-        if (time > waveLength / 4 || time < -waveLength / 4) {
+        if (time > waveLengthLeft / 4 || time < -waveLengthLeft / 4) {
             timeDirection *= -1;
         }
 
         // Update the positions of the points for the left wave
         const leftPositions = leftWave.geometry.attributes.position.array;
+        const leftWaveData = leftWave.userData;
         for (let i = 0; i < numPoints; i++) {
             const x = leftPositions[i * 3] + time;
-            if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * waveFrequency);
+            if (x > -leftWaveData.waveLength / 4 && x < leftWaveData.waveLength / 4) {
+                const y = leftWaveData.waveAmplitude * Math.sin(((x + leftWaveData.waveLength / 4) % leftWaveData.waveLength) * leftWaveData.waveFrequency);
                 leftPositions[i * 3 + 1] = y;
             } else {
                 leftPositions[i * 3 + 1] = 0;
@@ -82,10 +89,11 @@ window.onload = function () {
 
         // Update the positions of the points for the right wave
         const rightPositions = rightWave.geometry.attributes.position.array;
+        const rightWaveData = rightWave.userData;
         for (let i = 0; i < numPoints; i++) {
             const x = rightPositions[i * 3] - time;
-            if (x > -waveLength / 4 && x < waveLength / 4) {
-                const y = waveAmplitude * Math.sin(((x + waveLength / 4) % waveLength) * waveFrequency);
+            if (x > -rightWaveData.waveLength / 4 && x < rightWaveData.waveLength / 4) {
+                const y = rightWaveData.waveAmplitude * Math.sin(((x + rightWaveData.waveLength / 4) % rightWaveData.waveLength) * rightWaveData.waveFrequency);
                 rightPositions[i * 3 + 1] = y;
             } else {
                 rightPositions[i * 3 + 1] = 0;
@@ -95,9 +103,13 @@ window.onload = function () {
 
         renderer.render(scene, camera);
     }
+    document.getElementById('leftWaveAmplitude').addEventListener('input', function (event) {
+        waveAmplitudeLeft = parseFloat(event.target.value);
+    });
 
-
+    document.getElementById('rightWaveAmplitude').addEventListener('input', function (event) {
+        waveAmplitudeRight = parseFloat(event.target.value);
+    });
 
     animate();
-
-};
+}
