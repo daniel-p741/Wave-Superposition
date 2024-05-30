@@ -1,38 +1,38 @@
 window.onload = function () {
     const container = document.querySelector('#canvas-container');
-    const loader = new THREE.GLTFLoader();
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
     camera.position.set(0, 5, 10);
     camera.lookAt(new THREE.Vector3(0, 0, 0));
-    const travelDistance = 1;
+
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0xabcdef, 1);
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0x404040, 2); // Increase ambient light intensity
+    const ambientLight = new THREE.AmbientLight(0x404040, 2);
     scene.add(ambientLight);
 
-    const light = new THREE.PointLight(0xFFFFFF, 2, 100); // Increase point light intensity
+    const light = new THREE.PointLight(0xFFFFFF, 2, 100);
     light.position.set(10, 10, 16);
     scene.add(light);
 
-    var width = window.innerWidth;
-    var height = window.innerHeight;
+
+
 
     const numPoints = 100;
 
-    const waveAmplitudeLeft = 4; // Initial amplitude for the left wave
-    const waveLengthLeft = 30; // Wavelength for the left wave
-    const waveFrequencyLeft = Math.PI / (waveLengthLeft / 2);
+    const waveAmplitudeLeft = 4;
+    const waveLengthLeft = 30;
 
-    const waveAmplitudeRight = 3; // Initial amplitude for the right wave
-    const waveLengthRight = 30; // Wavelength for the right wave
-    const waveFrequencyRight = Math.PI / (waveLengthRight / 2);
 
-    const yOffset = -5; // Adjust this value to move the waves closer to the bottom
+    const waveAmplitudeRight = 3;
+    const waveLengthRight = 30;
+
+
+    const yOffset = -5;
 
     // Function to create a single connected wave with specific amplitude and wavelength
     function createConnectedWave(startX, direction, waveLength, waveAmplitude, yOffset) {
@@ -44,9 +44,9 @@ window.onload = function () {
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineBasicMaterial({
             color: 0x0000ff,
-            linewidth: 5, // Set the desired line thickness
-            linecap: 'round', // Set the line cap style to 'round' for rounded ends
-            linejoin: 'round' // Set the line join style to 'round' for rounded joins
+            linewidth: 5,
+            linecap: 'round',
+            linejoin: 'round'
         });
         const wave = new THREE.Line(geometry, material);
         wave.userData = { waveAmplitude, waveLength, waveFrequency: Math.PI / (waveLength / 2), yOffset };
@@ -91,7 +91,7 @@ window.onload = function () {
         wave.geometry.attributes.position.needsUpdate = true;
     }
 
-    // Animation loop
+
     function animate() {
         requestAnimationFrame(animate);
 
@@ -102,7 +102,7 @@ window.onload = function () {
             timeDirection *= -1;
         }
 
-        // Update the positions of the points for the waves
+
         updateWavePoints(leftWave, time, 1);
         updateWavePoints(rightWave, time, -1);
 
@@ -110,14 +110,16 @@ window.onload = function () {
     }
 
     document.getElementById('leftWaveAmplitude').addEventListener('input', function (event) {
-        leftWave.userData.waveAmplitude = parseFloat(event.target.value); // Update left wave amplitude
+        leftWave.userData.waveAmplitude = parseFloat(event.target.value);
     });
 
     document.getElementById('rightWaveAmplitude').addEventListener('input', function (event) {
-        rightWave.userData.waveAmplitude = parseFloat(event.target.value); // Update right wave amplitude
+        rightWave.userData.waveAmplitude = parseFloat(event.target.value);
     });
 
     animate();
+
+
 
 
 }
