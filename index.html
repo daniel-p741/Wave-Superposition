@@ -1,38 +1,111 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <title>Wave Superposition</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wave Superposition Engine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="data:image/x-icon;,">
-
 </head>
-
 <body>
-    <div id="canvas-container"></div>
+    <div id="canvas-container"></div><!-- Three.JS Canvas -->
 
-    <!-- Include three.js library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="wave_superposition.js"></script>
+    <!-- Axis Labels -->
+    <div id="axis-x" class="axis-label axis-x">Position (m)</div>
+    <div id="axis-y" class="axis-label axis-y">Displacement (m)</div>
+    <div class="axis-tick tick-left">−20</div>
+    <div class="axis-tick tick-right">+20</div>
 
-    <div class="slider-container">
-        <div class="slider-label">Left Wave Amplitude</div>
-        <input type="range" id="leftWaveAmplitude" min="0" max="10" step="0.1" value="4">
-        <div class="slider-label">Right Wave Amplitude</div>
-        <input type="range" id="rightWaveAmplitude" min="0" max="10" step="0.1" value="6">
+    <!-- Glassmorphic UI Panel -->
+    <div id="ui-panel">
+        <div class="panel-header">
+            <h1>Wave Superposition</h1>
+        </div>
+
+        <div class="control-group">
+            <label for="waveType">Waveform Type</label>
+            <select id="waveType">
+                <option value="pulse">Pulse (Gaussian)</option>
+                <option value="continuous">Continuous (Sine)</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <div class="slider-header">
+                <label>Wave 1 Amplitude</label>
+                <span id="leftAmpVal" class="value-display">5.0 m</span>
+            </div>
+            <input type="range" class="slider" id="leftWaveAmplitude" min="-10" max="10" step="0.1" value="5">
+        </div>
+
+        <div class="control-group">
+            <div class="slider-header">
+                <label>Wave 2 Amplitude</label>
+                <span id="rightAmpVal" class="value-display">5.0 m</span>
+            </div>
+            <input type="range" class="slider" id="rightWaveAmplitude" min="-10" max="10" step="0.1" value="5">
+        </div>
+
+        <div class="control-group">
+            <div class="slider-header">
+                <label>Wave Speed</label>
+                <span id="speedVal" class="value-display">2.0 m/s</span>
+            </div>
+            <input type="range" class="slider" id="waveSpeed" min="0.1" max="10" step="0.1" value="2.0">
+        </div>
+
+
+        <div class="control-group">
+            <div class="slider-header">
+                <label>Wave 1 Phase</label>
+                <span id="phase1Val" class="value-display">0°</span>
+            </div>
+            <input type="range" class="slider" id="wave1Phase" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="control-group">
+            <div class="slider-header">
+                <label>Wave 2 Phase</label>
+                <span id="phase2Val" class="value-display">0°</span>
+            </div>
+            <input type="range" class="slider" id="wave2Phase" min="0" max="360" step="1" value="0">
+        </div>
+
+        <div class="controls-row">
+            <button id="btnPlayPause" class="btn primary">Pause</button>
+            <button id="btnReset" class="btn secondary">Reset</button>
+        </div>
     </div>
 
+    <!-- Legend Panel -->
+    <div id="legend-panel">
+        <div class="legend-item">
+            <span class="legend-dot" style="background:#3b82f6; box-shadow: 0 0 8px #3b82f6;"></span>
+            <span class="legend-label">Wave 1</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background:#ec4899; box-shadow: 0 0 8px #ec4899;"></span>
+            <span class="legend-label">Wave 2</span>
+        </div>
+        <div class="legend-item">
+            <span class="legend-dot" style="background:#ffffff; box-shadow: 0 0 8px rgba(255,255,255,0.6);"></span>
+            <span class="legend-label">Resultant Wave</span>
+        </div>
+    </div>
 
+    <!-- Includes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
+    <!-- Post-processing -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js"></script>
 
-
-
-
-
-
-
-
+    <!-- App Script -->
+    <script src="wave_superposition.js"></script>
 </body>
-
 </html>
